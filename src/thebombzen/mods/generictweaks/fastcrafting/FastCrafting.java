@@ -48,7 +48,8 @@ public class FastCrafting {
 	private long commandsLastModified = -1L;
 	private boolean shouldCraft = false;
 	private long sleeptime = 0;
-	private boolean shouldRemove = false;
+	private int stage = 0;
+	private Recipe recipe;
 
 	private void loadRecipesFile() throws IOException {
 		if (!recipesFile.exists()) {
@@ -106,13 +107,36 @@ public class FastCrafting {
 		ContainerWorkbench container = (ContainerWorkbench) craftScreen.inventorySlots;
 		if (sleeptime > 0){
 			sleeptime--;
-			if (sleeptime == 0){
-				for (int i = 0; i < 9; i++) {
+			if (sleeptime == 0) {
+				switch (stage) {
+				case 1:
 					Minecraft.getMinecraft().playerController.windowClick(
 							container.windowId, container.getSlotFromInventory(
-									container.craftMatrix, i).slotNumber, 0, 1,
+									container.craftResult, 0).slotNumber, 0, 1,
 							Minecraft.getMinecraft().thePlayer);
+					ReducedItemStack result = recipe.getResult();
+					if (commands.containsKey(result.getName())) {
+						Minecraft.getMinecraft().thePlayer.sendQueue
+								.addToSendQueue(new C01PacketChatMessage(
+										commands.get(result.getName())));
+						sleeptime = 10;
+					} else {
+						sleeptime = 1;
+					}
+					stage = 2;
+					return;
+				case 2:
+					for (int i = 0; i < 9; i++) {
+						Minecraft.getMinecraft().playerController.windowClick(
+								container.windowId,
+								container.getSlotFromInventory(
+										container.craftMatrix, i).slotNumber,
+								0, 1, Minecraft.getMinecraft().thePlayer);
+					}
+					stage = 0;
+					return;
 				}
+				
 			}
 			return;
 		}
@@ -189,7 +213,7 @@ public class FastCrafting {
 			return false;
 		}
 		recipelist: for (int recipeNum = recipes.size() - 1; recipeNum >= 0; recipeNum--) {
-			Recipe recipe = recipes.get(recipeNum);
+			recipe = recipes.get(recipeNum);
 			ReducedItemStack[] stacks = recipe.getItemStacks();
 			Map<Slot, Slot> invSlots = new HashMap<Slot, Slot>();
 			Map<ReducedItemStack, List<Slot>> requiredIn = new HashMap<ReducedItemStack, List<Slot>>();
@@ -282,25 +306,8 @@ public class FastCrafting {
 					}
 				}
 			}
-			Minecraft.getMinecraft().playerController
-					.windowClick(container.windowId,
-							container.getSlotFromInventory(
-									container.craftResult, 0).slotNumber, 0, 1,
-							Minecraft.getMinecraft().thePlayer);
-			ReducedItemStack result = recipe.getResult();
-			if (commands.containsKey(result.getName())) {
-				Minecraft.getMinecraft().thePlayer.sendQueue
-						.addToSendQueue(new C01PacketChatMessage(commands
-								.get(result.getName())));
-				sleeptime = 10;
-				return true;
-			}
-			for (int i = 0; i < 9; i++) {
-				Minecraft.getMinecraft().playerController.windowClick(
-						container.windowId, container.getSlotFromInventory(
-								container.craftMatrix, i).slotNumber, 0, 1,
-						Minecraft.getMinecraft().thePlayer);
-			}
+			stage = 1;
+			sleeptime = 1;
 			return true;
 		}
 		return false;
