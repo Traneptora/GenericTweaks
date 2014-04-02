@@ -108,24 +108,26 @@ public class FastCrafting {
 		if (sleeptime > 0){
 			sleeptime--;
 			if (sleeptime == 0) {
+				ReducedItemStack result = recipe.getResult();
 				switch (stage) {
 				case 1:
 					Minecraft.getMinecraft().playerController.windowClick(
 							container.windowId, container.getSlotFromInventory(
 									container.craftResult, 0).slotNumber, 0, 1,
 							Minecraft.getMinecraft().thePlayer);
-					ReducedItemStack result = recipe.getResult();
+					sleeptime = 1;
+					stage = 2;
+					return;
+				case 2:
 					if (commands.containsKey(result.getName())) {
 						Minecraft.getMinecraft().thePlayer.sendQueue
 								.addToSendQueue(new C01PacketChatMessage(
 										commands.get(result.getName())));
 						sleeptime = 10;
-					} else {
-						sleeptime = 1;
+						stage = 3;
+						return;
 					}
-					stage = 2;
-					return;
-				case 2:
+				case 3:
 					for (int i = 0; i < 9; i++) {
 						Minecraft.getMinecraft().playerController.windowClick(
 								container.windowId,
@@ -215,10 +217,9 @@ public class FastCrafting {
 		recipelist: for (int recipeNum = recipes.size() - 1; recipeNum >= 0; recipeNum--) {
 			recipe = recipes.get(recipeNum);
 			ReducedItemStack[] stacks = recipe.getItemStacks();
-			Map<Slot, Slot> invSlots = new HashMap<Slot, Slot>();
 			Map<ReducedItemStack, List<Slot>> requiredIn = new HashMap<ReducedItemStack, List<Slot>>();
 			Map<ReducedItemStack, List<Slot>> presentIn = new HashMap<ReducedItemStack, List<Slot>>();
-			boolean drag = false;
+			Map<ReducedItemStack, Boolean> drag = new HashMap<ReducedItemStack, Boolean>();
 			for (int craftSlot = 0; craftSlot < 9; craftSlot++) {
 				ReducedItemStack stack = stacks[craftSlot];
 				if (stack.isEmpty()) {
@@ -260,29 +261,18 @@ public class FastCrafting {
 				List<Slot> required = requiredIn.get(stack);
 				List<Slot> present = presentIn.get(stack);
 				if (present.size() >= required.size()) {
-					for (int i = 0; i < required.size(); i++) {
-						invSlots.put(required.get(i), present.get(i));
-					}
+					drag.put(stack, false);
 				} else {
 					if (!doesHaveEnough(present, required.size())) {
 						continue recipelist;
 					}
-					drag = true;
+					drag.put(stack, true);
 				}
 			}
-			if (!drag) {
-				for (Slot slot : invSlots.keySet()) {
-					Minecraft.getMinecraft().playerController.windowClick(
-							container.windowId, invSlots.get(slot).slotNumber,
-							0, 0, Minecraft.getMinecraft().thePlayer);
-					Minecraft.getMinecraft().playerController.windowClick(
-							container.windowId, slot.slotNumber, 0, 0,
-							Minecraft.getMinecraft().thePlayer);
-				}
-			} else {
-				for (ReducedItemStack stack : requiredIn.keySet()) {
-					List<Slot> required = requiredIn.get(stack);
-					List<Slot> present = presentIn.get(stack);
+			for (ReducedItemStack stack : requiredIn.keySet()) {
+				List<Slot> required = requiredIn.get(stack);
+				List<Slot> present = presentIn.get(stack);
+				if (drag.get(stack)) { 
 					for (int i = 0; i < present.size(); i++) {
 						Minecraft.getMinecraft().playerController.windowClick(
 								container.windowId, present.get(i).slotNumber,
@@ -291,7 +281,7 @@ public class FastCrafting {
 								container.windowId, -999, 0, 5,
 								Minecraft.getMinecraft().thePlayer);
 						for (int j = 0; j < required.size(); j++) {
-							int s = (i + j) % required.size();
+							int s = (j - i + required.size()) % required.size();
 							Minecraft.getMinecraft().playerController
 									.windowClick(container.windowId,
 											required.get(s).slotNumber, 1, 5,
@@ -303,6 +293,15 @@ public class FastCrafting {
 						Minecraft.getMinecraft().playerController.windowClick(
 								container.windowId, present.get(i).slotNumber,
 								0, 0, Minecraft.getMinecraft().thePlayer);
+					}
+				} else {
+					for (int i = 0; i < required.size(); i++){
+						Minecraft.getMinecraft().playerController.windowClick(
+								container.windowId, present.get(i).slotNumber,
+								0, 0, Minecraft.getMinecraft().thePlayer);
+						Minecraft.getMinecraft().playerController.windowClick(
+								container.windowId, required.get(i).slotNumber, 0, 0,
+								Minecraft.getMinecraft().thePlayer);
 					}
 				}
 			}
