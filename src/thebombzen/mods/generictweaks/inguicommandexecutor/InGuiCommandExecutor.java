@@ -23,7 +23,7 @@ import cpw.mods.fml.common.gameevent.TickEvent.Phase;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 
-@Mod(modid="generictweaks.inguicommandexecutor", name="In-Gui Command Executor")
+@Mod(modid="generictweaks.inguicommandexecutor", name="GT Command Executor")
 @SideOnly(Side.CLIENT)
 public class InGuiCommandExecutor {
 	

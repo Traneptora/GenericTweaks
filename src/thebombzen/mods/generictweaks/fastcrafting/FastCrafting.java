@@ -34,7 +34,7 @@ import cpw.mods.fml.common.gameevent.TickEvent.Phase;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 
-@Mod(modid = "generictweaks.fastcrafting", name = "Generic Tweaks Fast Crafting", version = "1.0")
+@Mod(modid = "generictweaks.fastcrafting", name = "GT Fast Crafting", version = "1.0")
 @SideOnly(Side.CLIENT)
 public class FastCrafting {
 	private List<Recipe> recipes = new ArrayList<Recipe>();
