@@ -96,7 +96,6 @@ public class ReflectionHelper {
 				Method method = declaringClass.getDeclaredMethod(name, parameterTypes);
 				method.setAccessible(true);
 				try {
-					
 					return (T) method.invoke(instance, args);
 				} catch (Exception e) {
 					throw new MethodNotFoundException("Error invoking private method", e);
