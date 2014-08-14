@@ -109,7 +109,7 @@ public class See {
 		if (!ForgeHooksClient.renderFirstPersonHand(event.context, event.partialTicks, 0))
         {
             GL11.glClear(GL11.GL_DEPTH_BUFFER_BIT);
-            ReflectionHelper.invokePrivateMethod(mc.entityRenderer, EntityRenderer.class, new String[]{"renderHand"}, new Class<?>[]{float.class, int.class}, event.partialTicks, 0);
+            ReflectionHelper.invokePrivateMethod(mc.entityRenderer, EntityRenderer.class, new String[]{"renderHand", "func_78476_b", "b"}, new Class<?>[]{float.class, int.class}, event.partialTicks, 0);
         }
 
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
